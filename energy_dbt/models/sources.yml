@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: "Raw data from the Energy-Charts API, loaded into Snowflake with PUT + COPY INTO."
+    database: ENERGY
+    schema: BRONZE
+    tables:
+      - name: raw_prices
+        description: "Raw hourly day-ahead prices for the DE-LU bidding zone."
+      - name: raw_power
+        description: "Raw quarter-hourly public power series for Germany (21 series)."

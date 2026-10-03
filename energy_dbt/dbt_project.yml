@@ -1,0 +1,24 @@
+name: 'energy_dbt'
+version: '1.0.0'
+profile: 'energy_dbt'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Silver = views (always up to date), Gold = tables (fast for analytics)
+models:
+  energy_dbt:
+    silver:
+      +schema: SILVER
+      +materialized: view
+    gold:
+      +schema: GOLD
+      +materialized: table

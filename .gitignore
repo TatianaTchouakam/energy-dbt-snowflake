@@ -1,0 +1,6 @@
+data/
+.env
+logs/
+.DS_Store
+.vscode/
+.user.yml

@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: fct_daily_generation
+    description: "Daily electricity generation in Germany by source group, in GWh (German local day)."
+    columns:
+      - name: day_local
+        description: "Calendar day in Europe/Berlin time."
+        data_tests: [not_null]
+      - name: source_group
+        description: "Family of sources (Solar, Wind, Other renewable, Fossil, Storage, Other)."
+        data_tests: [not_null]
+      - name: is_renewable
+        description: "True for Solar, Wind and Other renewable sources."
+      - name: energy_gwh
+        description: "Energy generated during the day, in GWh."
+        data_tests: [not_null]
+
+  - name: fct_hourly_market
+    description: "Hourly day-ahead price joined with generation and load for the same hour."
+    columns:
+      - name: hour_utc
+        description: "Start of the hour, in UTC."
+        data_tests: [not_null, unique]
+      - name: price_eur_mwh
+        description: "Day-ahead price in EUR/MWh."
+      - name: generation_mw
+        description: "Average total generation during the hour, in MW."
+      - name: renewable_mw
+        description: "Average renewable generation during the hour, in MW."
+      - name: load_mw
+        description: "Average grid load (consumption) during the hour, in MW."
+      - name: renewable_share_pct
+        description: "Share of renewables in total generation, in %."
+      - name: is_negative_price
+        description: "True when the day-ahead price is below zero."

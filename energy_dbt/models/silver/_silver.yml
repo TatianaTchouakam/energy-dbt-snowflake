@@ -1,0 +1,37 @@
+version: 2
+
+models:
+  - name: stg_prices
+    description: "Cleaned hourly day-ahead prices for the DE-LU bidding zone."
+    columns:
+      - name: price_ts_utc
+        description: "Start of the hour, in UTC."
+        data_tests: [not_null, unique]
+      - name: price_eur_mwh
+        description: "Day-ahead price in EUR/MWh (can be negative)."
+        data_tests: [not_null]
+
+  - name: stg_power
+    description: "Quarter-hourly power series, cleaned and classified by type and source group."
+    columns:
+      - name: power_ts_utc
+        description: "Start of the quarter-hour, in UTC."
+        data_tests: [not_null]
+      - name: series_type
+        description: "Nature of the series: generation, balance, load or share."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['generation', 'balance', 'load', 'share']
+      - name: source_group
+        description: "Family of sources: Solar, Wind, Other renewable, Fossil, Storage, Other."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Solar', 'Wind', 'Other renewable', 'Fossil', 'Storage', 'Other']
+      - name: unit
+        description: "MW for power series, % for share indicators."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['MW', '%']

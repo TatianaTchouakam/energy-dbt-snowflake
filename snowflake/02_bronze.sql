@@ -1,0 +1,43 @@
+USE WAREHOUSE ENERGY_WH;
+USE SCHEMA ENERGY.BRONZE;
+
+-- ===== Part 1: objects (run before load_to_bronze.py) =====
+
+-- How to read our CSV files
+CREATE OR REPLACE FILE FORMAT CSV_FORMAT
+  TYPE = CSV
+  SKIP_HEADER = 1
+  FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+  NULL_IF = ('', 'NULL');
+
+-- Landing zone for raw files
+CREATE STAGE IF NOT EXISTS RAW_STAGE FILE_FORMAT = CSV_FORMAT;
+
+-- Raw tables (+ 2 lineage columns)
+CREATE OR REPLACE TABLE RAW_PRICES (
+  UNIX_SECONDS   NUMBER,
+  PRICE_EUR_MWH  FLOAT,
+  _SOURCE_FILE   STRING,
+  _LOADED_AT     TIMESTAMP_NTZ
+);
+
+CREATE OR REPLACE TABLE RAW_POWER (
+  UNIX_SECONDS     NUMBER,
+  PRODUCTION_TYPE  STRING,
+  VALUE_MW         FLOAT,
+  _SOURCE_FILE     STRING,
+  _LOADED_AT       TIMESTAMP_NTZ
+);
+
+-- ===== Part 2: load (run after load_to_bronze.py) =====
+
+COPY INTO RAW_PRICES
+FROM (SELECT $1, $2, METADATA$FILENAME, CURRENT_TIMESTAMP() FROM @RAW_STAGE/prices.csv);
+
+COPY INTO RAW_POWER
+FROM (SELECT $1, $2, $3, METADATA$FILENAME, CURRENT_TIMESTAMP() FROM @RAW_STAGE/power.csv);
+
+-- Check: expected 2159 prices and 181356 power rows
+SELECT 'prices' AS tbl, COUNT(*) AS nb_rows FROM RAW_PRICES
+UNION ALL
+SELECT 'power', COUNT(*) FROM RAW_POWER;
