@@ -5,6 +5,10 @@ on:
     - cron: "0 6 * * *"   # every day at 06:00 UTC (08:00 German summer time)
   workflow_dispatch:       # allows a manual run from GitHub or the CLI
 
+permissions:
+  contents: read
+  actions: write           # needed to disable the workflow after the Snowflake trial
+
 jobs:
   run-pipeline:
     runs-on: ubuntu-24.04
@@ -14,6 +18,16 @@ jobs:
       SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
 
     steps:
+      - name: Disable the schedule after the Snowflake trial ends
+        if: github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ "$(date -u +%F)" > "2026-10-30" ]]; then
+            gh workflow disable daily_pipeline.yml --repo "${{ github.repository }}"
+            echo "Snowflake trial ending: the daily schedule has been disabled after this run." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Check out the repository
         uses: actions/checkout@v5
 
