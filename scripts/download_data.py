@@ -1,8 +1,18 @@
-import requests, pandas as pd
+import os
+from datetime import datetime, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
+
+import pandas as pd
+import requests
 
 BASE = "https://api.energy-charts.info"
-START, END = "2025-01-01", "2025-03-31"
+
+# Default: yesterday (German local day). Override with START_DATE / END_DATE (YYYY-MM-DD).
+yesterday = (datetime.now(ZoneInfo("Europe/Berlin")) - timedelta(days=1)).date().isoformat()
+START = os.getenv("START_DATE", yesterday)
+END = os.getenv("END_DATE", START)
+
 OUT = Path("data"); OUT.mkdir(exist_ok=True)
 
 # 1. Day-ahead prices (DE-LU bidding zone)
@@ -19,4 +29,4 @@ rows = [(ts, p["name"], v) for p in j["production_types"]
 power = pd.DataFrame(rows, columns=["unix_seconds", "production_type", "value_mw"])
 power.to_csv(OUT / "power.csv", index=False)
 
-print(f"{len(prices)} prices, {len(power)} power rows")
+print(f"Period {START} -> {END}: {len(prices)} prices, {len(power)} power rows")

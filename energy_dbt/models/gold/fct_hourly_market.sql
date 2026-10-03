@@ -1,5 +1,14 @@
 -- Hourly price versus generation and load for the same hour
-with hourly_by_type as (
+with prices_hourly as (
+    -- Day-ahead prices are hourly before Oct 2025 and quarter-hourly after: average per hour
+    select
+        date_trunc('hour', price_ts_utc) as hour_utc,
+        avg(price_eur_mwh)               as price_eur_mwh
+    from {{ ref('stg_prices') }}
+    group by 1
+),
+
+hourly_by_type as (
     -- Generation data is quarter-hourly: average per hour and per series
     select
         date_trunc('hour', power_ts_utc) as hour_utc,
@@ -22,12 +31,12 @@ hourly as (
 )
 
 select
-    p.price_ts_utc                                              as hour_utc,
-    p.price_eur_mwh,
+    p.hour_utc,
+    round(p.price_eur_mwh, 2)                                   as price_eur_mwh,
     round(h.generation_mw)                                      as generation_mw,
     round(h.renewable_mw)                                       as renewable_mw,
     round(h.load_mw)                                            as load_mw,
     round(h.renewable_mw / nullif(h.generation_mw, 0) * 100, 1) as renewable_share_pct,
     p.price_eur_mwh < 0                                         as is_negative_price
-from {{ ref('stg_prices') }} p
-left join hourly h on p.price_ts_utc = h.hour_utc
+from prices_hourly p
+left join hourly h on p.hour_utc = h.hour_utc

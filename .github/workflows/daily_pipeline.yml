@@ -1,0 +1,52 @@
+name: Daily energy pipeline
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # every day at 06:00 UTC (08:00 German summer time)
+  workflow_dispatch:       # allows a manual run from GitHub or the CLI
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Write the Snowflake private key to a temporary file
+        env:
+          PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
+        run: |
+          printf '%s\n' "$PRIVATE_KEY" > "$RUNNER_TEMP/rsa_key.p8"
+          chmod 600 "$RUNNER_TEMP/rsa_key.p8"
+          echo "SNOWFLAKE_PRIVATE_KEY_PATH=$RUNNER_TEMP/rsa_key.p8" >> "$GITHUB_ENV"
+
+      - name: Extract yesterday's data from Energy-Charts
+        run: python scripts/download_data.py
+
+      - name: Load into Snowflake Bronze
+        run: python scripts/load_to_bronze.py
+
+      - name: Build and test Silver and Gold with dbt
+        working-directory: energy_dbt
+        run: dbt build
+
+      - name: Upload dbt logs if something failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-logs
+          path: energy_dbt/logs/
