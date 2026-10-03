@@ -23,7 +23,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if [[ "$(date -u +%F)" > "2026-10-30" ]]; then
+          if [[ "$(date -u +%F)" > "2026-10-31" ]]; then
             gh workflow disable daily_pipeline.yml --repo "${{ github.repository }}"
             echo "Snowflake trial ending: the daily schedule has been disabled after this run." >> "$GITHUB_STEP_SUMMARY"
           fi
