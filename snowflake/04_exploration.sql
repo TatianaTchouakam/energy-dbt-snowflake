@@ -11,9 +11,10 @@ FROM ENERGY.SILVER.STG_POWER
 GROUP BY ALL
 ORDER BY SERIES_TYPE, SOURCE_GROUP, PRODUCTION_TYPE;
 
--- 3. Key insight: renewables vs price (Gold)
+-- 3. Key insight: renewables vs price (Gold), fixed on Q1 2025 for reproducibility
 SELECT
     ROUND(CORR(RENEWABLE_SHARE_PCT, PRICE_EUR_MWH), 2) AS correlation,
     COUNT_IF(IS_NEGATIVE_PRICE)                        AS negative_price_hours,
     ROUND(AVG(PRICE_EUR_MWH), 1)                       AS avg_price_eur_mwh
-FROM ENERGY.GOLD.FCT_HOURLY_MARKET;
+FROM ENERGY.GOLD.FCT_HOURLY_MARKET
+WHERE HOUR_UTC >= '2025-01-01' AND HOUR_UTC < '2025-04-01';

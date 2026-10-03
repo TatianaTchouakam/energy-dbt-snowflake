@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: stg_prices
-    description: "Cleaned hourly day-ahead prices for the DE-LU bidding zone."
+    description: "Cleaned day-ahead prices for the DE-LU bidding zone (hourly until Sept 2025, quarter-hourly since Oct 2025)."
     columns:
       - name: price_ts_utc
         description: "Start of the hour, in UTC."
