@@ -44,6 +44,9 @@ jobs:
         working-directory: energy_dbt
         run: dbt build
 
+      - name: Publish the daily summary
+        run: python scripts/daily_summary.py
+
       - name: Upload dbt logs if something failed
         if: failure()
         uses: actions/upload-artifact@v5
