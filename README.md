@@ -319,6 +319,7 @@ Classification of the 21 Energy-Charts series:
 | 15 | 96 prices per day instead of 24 for recent data | The European day-ahead market moved to 15-minute prices in October 2025 | Gold averages prices per hour before the join; without it, most prices would silently miss the join |
 | 16 | GitHub annotation: Node.js 20 deprecated | Older versions of `checkout`, `setup-python` and `upload-artifact` | Upgraded to `checkout@v5`, `setup-python@v6`, `upload-artifact@v5` |
 | 17 | GitHub annotation: `ubuntu-latest` migrating to a new version | `ubuntu-latest` changes over time | Pinned the runner to `ubuntu-24.04` |
+| 18 | Scheduled run failed with `503 Service Unavailable` | The Energy-Charts API was temporarily down | Added automatic retries with exponential backoff (5 attempts, 10 s → 160 s) for 429 and 5xx errors |
 
 **Lessons learned:** profile the raw data before transforming it, expect the source to change over time,
 keep secrets out of code from the first minute, and prefer scripted, versioned steps over manual UI actions.
