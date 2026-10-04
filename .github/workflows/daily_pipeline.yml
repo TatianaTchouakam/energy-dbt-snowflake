@@ -63,7 +63,8 @@ jobs:
 
       - name: Upload dbt logs if something failed
         if: failure()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: dbt-logs
           path: energy_dbt/logs/
+          if-no-files-found: ignore
