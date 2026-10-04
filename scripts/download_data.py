@@ -26,6 +26,10 @@ session.mount("https://", HTTPAdapter(max_retries=Retry(
 
 OUT = Path("data"); OUT.mkdir(exist_ok=True)
 
+# Remove files from previous runs, so a failed download can never lead to reloading old data
+for old_file in OUT.glob("*.csv"):
+    old_file.unlink()
+
 # 1. Day-ahead prices (DE-LU bidding zone)
 r = session.get(f"{BASE}/price", params={"bzn": "DE-LU", "start": START, "end": END}, timeout=60)
 r.raise_for_status(); j = r.json()
